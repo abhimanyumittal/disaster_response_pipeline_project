@@ -6,13 +6,14 @@ import pandas as pd
 from sqlalchemy import create_engine
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import AdaBoostClassifier
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, accuracy_score, precision_score, recall_score, f1_score
 
 nltk.download('stopwords')
 nltk.download('punkt')
@@ -48,11 +49,16 @@ def tokenize(text):
     Returns:
         word_tokens: list of tokens
     """
+
+    tokens = word_tokenize(text)
+    lemmatizer = WordNetLemmatizer()
+
     word_tokens = []
-    sw = stopwords.words('english') + list(string.punctuation)
-    for word in word_tokenize(text.lower()):
-        if word not in sw:
-            word_tokens.append(word)
+    stop_words = stopwords.words('english') + list(string.punctuation)
+    for word in tokens:
+        clean_token = lemmatizer.lemmatize(word).lower().strip()
+        if clean_token not in stop_words:
+            word_tokens.append(clean_token)
 
     return word_tokens
 
@@ -91,6 +97,18 @@ def evaluate_model(model, X_test, Y_test, category_names):
     Y_pred = model.predict(X_test)
     # show report
     print(classification_report(Y_test, Y_pred, target_names=category_names))
+
+    # show accuray report for each category
+    print('****** Scores for each category ******')
+    for index in range(36):
+        print('Category: {} \n\tAccuracy: {} \tPrecision: {} \tRecall: {} \tF1_Score: {}'.format(
+            category_names[index],
+            accuracy_score(Y_test[:, index], Y_pred[:, index]),
+            precision_score(Y_test[:, index], Y_pred[:, index]),
+            recall_score(Y_test[:, index], Y_pred[:, index]),
+            f1_score(Y_test[:, index], Y_pred[:, index])
+            )
+        )
 
 
 def save_model(model, model_filepath):
