@@ -1,18 +1,21 @@
 import json
 import plotly
 import pandas as pd
+import string
 
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
 
 from flask import Flask
-from flask import render_template, request, jsonify
+from flask import render_template, request  # , jsonify
 from plotly.graph_objs import Bar
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
 
 
 app = Flask(__name__)
+
 
 def tokenize(text):
     tokens = word_tokenize(text)
@@ -37,7 +40,7 @@ model = joblib.load("../models/classifier.pkl")
 @app.route('/')
 @app.route('/index')
 def index():
-    
+
     # extract data needed for visuals
     # TODO: Below is an example - modify to extract data for your own visuals
     # extract data needed for visuals
@@ -47,6 +50,11 @@ def index():
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
 
+    stop_words = stopwords.words('english') + list(string.punctuation)
+    all_words = pd.Series(' '.join(df['message']).lower().split())
+    frequent_words = all_words[~all_words.isin(
+        stop_words)].value_counts()[:10]
+    frequent_words_index = list(frequent_words.index)
 
     # create visuals
     graphs = [
@@ -86,12 +94,30 @@ def index():
                 }
             }
         },
+        {
+            'data': [
+                Bar(
+                    x=frequent_words_index,
+                    y=frequent_words
+                )
+            ],
+
+            'layout':{
+                'title': 'Most frequent words',
+                'yaxis': {
+                    'title': 'Frequency of word'
+                },
+                'xaxis': {
+                    'title': 'Word'
+                }
+            }
+        }
     ]
-    
+
     # encode plotly graphs in JSON
     ids = ["graph-{}".format(i) for i, _ in enumerate(graphs)]
     graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
-    
+
     # render web page with plotly graphs
     return render_template('master.html', ids=ids, graphJSON=graphJSON)
 
@@ -100,13 +126,13 @@ def index():
 @app.route('/go')
 def go():
     # save user input in query
-    query = request.args.get('query', '') 
+    query = request.args.get('query', '')
 
     # use model to predict classification for query
     classification_labels = model.predict([query])[0]
     classification_results = dict(zip(df.columns[4:], classification_labels))
 
-    # This will render the go.html Please see that file. 
+    # This will render the go.html Please see that file.
     return render_template(
         'go.html',
         query=query,
