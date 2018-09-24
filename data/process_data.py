@@ -44,7 +44,8 @@ def process_categories(df):
 
     for column in categories:
         # set each value to be the last character of the string
-        categories[column] = categories[column].apply(lambda x: x[-1] if int(x[-1]) < 2 else 1)
+        categories[column] = categories[column].apply(
+            lambda x: x[-1] if int(x[-1]) < 2 else 1)
         # convert column from string to numeric
         categories[column] = categories[column].astype(str).astype(int)
 
@@ -52,38 +53,39 @@ def process_categories(df):
 
 
 def clean_data(df):
-  """
-  Clean the dataset
-  Args:
-    df: merged dataframe
-  Returns:
-    df: cleaned dataframe
-  """
-  # get categories in a seperate dataframe
-  categories = process_categories(df)
-  # remove categories column
-  df = df.drop(['categories'],axis=1)
-  # concat merged dataframe (without categories column) and categories dataframe
-  df = pd.concat([df,categories],axis=1)
+    """
+    Clean the dataset
+    Args:
+      df: merged dataframe
+    Returns:
+      df: cleaned dataframe
+    """
+    # get categories in a seperate dataframe
+    categories = process_categories(df)
+    # remove categories column
+    df = df.drop(['categories'], axis=1)
+    # concat merged dataframe (without categories column) and categories
+    # dataframe
+    df = pd.concat([df, categories], axis=1)
 
-  # for checking of number of duplicates, can use
-  # print(df.duplicated().sum())
+    # for checking of number of duplicates, can use
+    # print(df.duplicated().sum())
 
-  # remove duplicate rows
-  df = df.drop_duplicates()
+    # remove duplicate rows
+    df = df.drop_duplicates()
 
-  return df
+    return df
 
 
 def save_data(df, database_filename):
-  """
-  save dataframe to db
-  Args:
-    df: merged dataframe
-    database_filename: name of database filename
-  """
-  engine = create_engine('sqlite:///'+database_filename)
-  df.to_sql('disaster_response', engine, index=False)
+    """
+    save dataframe to db
+    Args:
+      df: merged dataframe
+      database_filename: name of database filename
+    """
+    engine = create_engine('sqlite:///' + database_filename)
+    df.to_sql('disaster_response', engine, index=False)
 
 
 def main():
