@@ -27,12 +27,12 @@ In a python script, `train_classifier.py`, there are the following steps involve
 In the python script, `run.py`, there are the following steps:
 - Load the model from pickle file.
 - Create visualizations for different categorizations:
- - Distribution of Message Genres
- ![](images/message_genre.png)
- - Distribution of Categories
- ![](images/category_distribution.png)
- - Word Frequency
- ![](images/word_frequency.png)
+    - Distribution of Message Genres
+    ![](images/message_genre.png)
+    - Distribution of Categories
+    ![](images/category_distribution.png)
+    - Word Frequency
+    ![](images/word_frequency.png)
 
 ### Instructions:
 1. Run the following commands in the project's root directory to set up your database and model.
